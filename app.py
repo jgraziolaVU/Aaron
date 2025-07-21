@@ -2036,7 +2036,6 @@ def main():
                 - ✅ **Data Quality Analysis**: Comprehensive statistical validation
                 - ✅ **Corrected Calculations**: All mathematical errors fixed
                 - ✅ **Professional Reports**: Export-ready documentation
-                - ✅ **AI-Powered Analysis**: Automated issue detection
                 
                 **🔧 Professional Benefits:**
                 - Industry-standard capacity factor recommendations
