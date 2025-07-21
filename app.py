@@ -613,12 +613,14 @@ def display_ai_analysis(ai_analysis: Dict[str, Any]):
 
 def generate_enhanced_debug_report(debug_data: Dict[str, Any]) -> str:
     """
-    Generate a comprehensive debug report with complete impact calculations.
+    Generate a comprehensive debug report with complete impact calculations and code snippets.
     """
     report = f"""
-ENHANCED ENVIRONMENTAL IMPACT CALCULATOR - DEBUG REPORT
+ENHANCED ENVIRONMENTAL IMPACT CALCULATOR - COMPLETE DEBUG REPORT
+===============================================================
 Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-=================================================================
+Report Type: COMPREHENSIVE ENGINEERING ANALYSIS WITH CODE SNIPPETS
+===============================================================
 
 INPUT PARAMETERS
 ----------------
@@ -626,96 +628,215 @@ Selected State: {debug_data.get('state', 'N/A')}
 Selected Metric: {debug_data.get('metric', 'N/A')}
 Power Input: {debug_data.get('power_input', {}).get('input_value', 'N/A')} {debug_data.get('power_input', {}).get('input_unit', '')}
 Water Input: {debug_data.get('water_input', {}).get('input_value', 'N/A')} {debug_data.get('water_input', {}).get('input_unit', '')}
+Capacity Factor: {debug_data.get('capacity_factor', 1.0):.1%}
 
-POWER CONSUMPTION CONVERSION - DETAILED
----------------------------------------
+POWER CONSUMPTION CONVERSION - DETAILED WITH CODE
+=================================================
 """
     
     if 'power_conversion' in debug_data:
         power = debug_data['power_conversion']
-        report += f"Input: {power['input_value']} {power['input_unit']}\n"
-        report += f"Capacity Factor Applied: {power.get('capacity_factor', 1.0):.1%}\n"
-        report += f"Conversion Factor: {power['conversion_factor']}\n"
-        report += f"Calculation Steps:\n"
+        report += f"""
+INPUT PARAMETERS:
+  • Input Value: {power['input_value']} {power['input_unit']}
+  • Capacity Factor Applied: {power.get('capacity_factor', 1.0):.1%}
+  • Conversion Factor: {power['conversion_factor']}
+
+CALCULATION STEPS:
+"""
         for step in power['calculation_steps']:
             report += f"  • {step}\n"
         
+        # Add code snippet
+        report += f"""
+CODE SNIPPET - Power Conversion Function:
+----------------------------------------
+def convert_power_to_kwh_per_year(value: float, unit: str, capacity_factor: float = 1.0):
+    if unit == "kW":
+        hours_per_year = 8760  # 365.25 * 24
+        result = value * hours_per_year * capacity_factor
+        # Your calculation: {power['input_value']} * 8760 * {power.get('capacity_factor', 1.0)} = {power['output_value']}
+    elif unit == "MW":
+        kw_conversion = 1000
+        hours_per_year = 8760
+        result = value * kw_conversion * hours_per_year * capacity_factor
+        # Your calculation: {power['input_value']} * 1000 * 8760 * {power.get('capacity_factor', 1.0)} = {power['output_value']}
+    elif unit == "kWh/yr":
+        result = value  # Direct conversion
+    elif unit == "kWh/mo":
+        result = value * 12  # 12 months per year
+    return result
+"""
+        
         # Add engineering notes
         if 'engineering_notes' in power:
-            report += f"\nEngineering Notes:\n"
+            report += f"\nENGINEERING VALIDATION NOTES:\n"
             for note in power['engineering_notes']:
-                report += f"  ⚠️ {note}\n"
+                report += f"  ⚠️  {note}\n"
         
-        report += f"Final Result: {power['output_value']:,.2f} {power['output_unit']}\n\n"
+        report += f"\nFINAL POWER RESULT: {power['output_value']:,.2f} {power['output_unit']}\n\n"
     
     report += """
-WATER CONSUMPTION CONVERSION - DETAILED
----------------------------------------
+WATER CONSUMPTION CONVERSION - DETAILED WITH CODE
+=================================================
 """
     
     if 'water_conversion' in debug_data:
         water = debug_data['water_conversion']
-        report += f"Input: {water['input_value']} {water['input_unit']}\n"
-        report += f"Conversion Factor: {water['conversion_factor']}\n"
-        report += f"Calculation Steps:\n"
+        report += f"""
+INPUT PARAMETERS:
+  • Input Value: {water['input_value']} {water['input_unit']}
+  • Conversion Factor: {water['conversion_factor']}
+
+CALCULATION STEPS:
+"""
         for step in water['calculation_steps']:
             report += f"  • {step}\n"
             
+        # Add code snippet for water conversion
+        report += f"""
+CODE SNIPPET - Water Conversion Function:
+-----------------------------------------
+def convert_water_to_liters_per_year(value: float, unit: str):
+    if unit == "L/s":
+        seconds_per_year = 31536000  # 365.25 * 24 * 3600
+        result = value * seconds_per_year
+        # Your calculation: {water['input_value']} * 31,536,000 = {water['output_value']}
+    elif unit == "gpm":  # gallons per minute
+        minutes_per_year = 525600  # 365.25 * 24 * 60
+        liters_per_gallon = 3.78541
+        result = value * minutes_per_year * liters_per_gallon
+        # Your calculation: {water['input_value']} * 525,600 * 3.78541 = {water['output_value']}
+    elif unit == "L/yr":
+        result = value  # Direct conversion
+    elif unit == "L/mo":
+        result = value * 12  # 12 months per year
+    return result
+"""
+        
         # Add engineering notes
         if 'engineering_notes' in water:
-            report += f"\nEngineering Notes:\n"
+            report += f"\nENGINEERING VALIDATION NOTES:\n"
             for note in water['engineering_notes']:
-                report += f"  ⚠️ {note}\n"
+                report += f"  ⚠️  {note}\n"
         
-        report += f"Final Result: {water['output_value']:,.2f} {water['output_unit']}\n\n"
+        report += f"\nFINAL WATER RESULT: {water['output_value']:,.2f} {water['output_unit']}\n\n"
     
-    # Enhanced facility impact section
+    # Enhanced facility impact section with code
     if 'environmental_impact' in debug_data:
         impact = debug_data['environmental_impact']
         report += f"""
-COMPLETE ENVIRONMENTAL IMPACT CALCULATION
-------------------------------------------
+COMPLETE ENVIRONMENTAL IMPACT CALCULATION WITH CODE
+===================================================
 Annual Power Consumption: {impact['calculation_details']['power_consumption_kwh']:,.0f} kWh/year
 Environmental Metric: {debug_data.get('metric', 'N/A')}
 
-Statistical Analysis of Regional Factors:
+STATISTICAL ANALYSIS OF REGIONAL FACTORS:
   • Counties Analyzed: {impact['calculation_details']['counties_analyzed']:,}
-  • Minimum Factor: {impact['impact_statistics']['min_factor']:.6f}
-  • Maximum Factor: {impact['impact_statistics']['max_factor']:.6f}
-  • Median Factor: {impact['impact_statistics']['median_factor']:.6f}
-  • Mean Factor: {impact['impact_statistics']['mean_factor']:.6f}
-  • Standard Deviation: {impact['impact_statistics']['std_factor']:.6f}
+  • Minimum Factor: {impact['impact_statistics']['min_factor']:.8f}
+  • Maximum Factor: {impact['impact_statistics']['max_factor']:.8f}
+  • Median Factor: {impact['impact_statistics']['median_factor']:.8f}
+  • Mean Factor: {impact['impact_statistics']['mean_factor']:.8f}
+  • Standard Deviation: {impact['impact_statistics']['std_factor']:.8f}
+  • 25th Percentile: {impact['impact_statistics']['percentile_25']:.8f}
+  • 75th Percentile: {impact['impact_statistics']['percentile_75']:.8f}
 
 FACILITY ENVIRONMENTAL IMPACT CALCULATION:
-  • Calculation: {impact['calculation_details']['calculation']}
+  • Primary Calculation: {impact['calculation_details']['calculation']}
   • Result: {impact['facility_impact']['median_impact']:.2f} {impact['impact_unit']}
-  
-Impact Range Analysis:
-  • Best Case (Min Factor): {impact['facility_impact']['min_impact']:.2f} {impact['impact_unit']}
-  • Worst Case (Max Factor): {impact['facility_impact']['max_impact']:.2f} {impact['impact_unit']}
-  • Most Likely (Median): {impact['facility_impact']['median_impact']:.2f} {impact['impact_unit']}
 
-FACILITY ASSESSMENT:
+CODE SNIPPET - Environmental Impact Calculation:
+------------------------------------------------
+def calculate_environmental_impact(power_kwh_per_year, metric_values, metric_name):
+    # Remove invalid values
+    valid_values = metric_values[~np.isnan(metric_values) & (metric_values > 0)]
+    
+    # Calculate statistics
+    median_factor = np.median(valid_values)  # Your median: {impact['impact_statistics']['median_factor']:.8f}
+    min_factor = np.min(valid_values)        # Your min: {impact['impact_statistics']['min_factor']:.8f}
+    max_factor = np.max(valid_values)        # Your max: {impact['impact_statistics']['max_factor']:.8f}
+    
+    # Calculate facility impact
+    median_impact = power_kwh_per_year * median_factor
+    min_impact = power_kwh_per_year * min_factor
+    max_impact = power_kwh_per_year * max_factor
+    
+    # Your specific calculation:
+    # {impact['calculation_details']['power_consumption_kwh']:,.0f} kWh/year × {impact['impact_statistics']['median_factor']:.8f} = {impact['facility_impact']['median_impact']:.2f}
+    
+    return median_impact, min_impact, max_impact
+
+IMPACT RANGE ANALYSIS:
+  • Best Case (Min Factor): {impact['facility_impact']['min_impact']:.2f} {impact['impact_unit']}
+  • Most Likely (Median): {impact['facility_impact']['median_impact']:.2f} {impact['impact_unit']}
+  • Worst Case (Max Factor): {impact['facility_impact']['max_impact']:.2f} {impact['impact_unit']}
+  • Mean Impact: {impact['facility_impact']['mean_impact']:.2f} {impact['impact_unit']}
+
+FACILITY SCALE ASSESSMENT:
   • Scale Category: {impact['facility_assessment']['category']}
   • Context: {impact['facility_assessment']['context']}
   • Typical Range: {impact['facility_assessment']['typical_range']}
-  • Engineering Notes: {impact['facility_assessment']['engineering_notes']}
+  • Engineering Assessment: {impact['facility_assessment']['engineering_notes']}
 
 INTERPRETATION:
 {impact['interpretation']}
 """
+
+        # Add facility categorization code
+        report += f"""
+CODE SNIPPET - Facility Size Categorization:
+--------------------------------------------
+def categorize_facility_size(power_kwh_per_year):
+    # Your facility: {impact['calculation_details']['power_consumption_kwh']:,.0f} kWh/year
     
-    # Add data quality analysis
+    if power_kwh_per_year < 10000:
+        return "Residential Scale"           # < 10,000 kWh/year
+    elif power_kwh_per_year < 30000:
+        return "Large Residential"          # 10,000-30,000 kWh/year
+    elif power_kwh_per_year < 100000:
+        return "Small Commercial"           # 30,000-100,000 kWh/year
+    elif power_kwh_per_year < 1000000:
+        return "Large Commercial"           # 100,000-1,000,000 kWh/year
+    elif power_kwh_per_year < 10000000:
+        return "Industrial Facility"       # 1M-10M kWh/year
+    else:
+        return "Large Industrial Complex"   # >10M kWh/year
+    
+    # Your facility categorized as: {impact['facility_assessment']['category']}
+"""
+    
+    # Add data quality analysis with code
     if 'data_analysis' in debug_data:
         analysis = debug_data['data_analysis']
         report += f"""
-DATA QUALITY ANALYSIS - COMPREHENSIVE
--------------------------------------
+DATA QUALITY ANALYSIS - COMPREHENSIVE WITH CODE
+===============================================
 Total Counties in Dataset: {analysis['total_counties']:,}
 Data Source: {analysis.get('_metadata', {}).get('data_source', 'Unknown')}
 File Loaded: {analysis.get('_metadata', {}).get('file_loaded', 'Unknown')}
 
-Metric Quality Summary:
+CODE SNIPPET - Data Quality Analysis:
+-------------------------------------
+import scipy.io
+import numpy as np
+
+def analyze_data_quality(data):
+    # Load data
+    metrics = scipy.io.loadmat("CountyLevelMetrics.mat")
+    
+    # Extract arrays - YOUR DATA:
+    AWAREUSCF = metrics["AWAREUSCF"].flatten()  # Water scarcity: {analysis['total_counties']:,} counties
+    EFkgkWh = metrics["EFkgkWh"].flatten()      # Carbon footprint: {analysis['total_counties']:,} counties  
+    EWIF = metrics["EWIF"].flatten()            # Water footprint: {analysis['total_counties']:,} counties
+    CountyFIPS = metrics["CountyFIPS"].flatten() # County codes: {analysis['total_counties']:,} counties
+    
+    # Data validation
+    for metric_name, values in [("AWAREUSCF", AWAREUSCF), ("EFkgkWh", EFkgkWh), ("EWIF", EWIF)]:
+        valid_values = values[~np.isnan(values) & (values > 0)]
+        validity_rate = (len(valid_values) / len(values)) * 100
+        print(f"{{metric_name}}: {{len(valid_values):,}}/{{len(values):,}} valid ({{validity_rate:.1f}}%)")
+
+METRIC QUALITY SUMMARY:
 """
         for metric, info in analysis['metrics_analysis'].items():
             report += f"""
@@ -727,37 +848,73 @@ Metric Quality Summary:
             
             if metric in analysis['data_ranges'] and analysis['data_ranges'][metric]:
                 ranges = analysis['data_ranges'][metric]
-                report += f"""  • Data Range: {ranges['min']:.6f} to {ranges['max']:.6f}
-  • Mean: {ranges['mean']:.6f} ± {ranges['std']:.6f} (std dev)
-  • Median: {ranges['median']:.6f}
+                report += f"""  • Data Range: {ranges['min']:.8f} to {ranges['max']:.8f}
+  • Mean: {ranges['mean']:.8f} ± {ranges['std']:.8f} (std dev)
+  • Median: {ranges['median']:.8f}
+  • Coefficient of Variation: {(ranges['std']/ranges['mean']):.4f}
 """
                 
                 if metric in analysis['statistical_summary']:
                     stats = analysis['statistical_summary'][metric]
-                    report += f"""  • 10th Percentile: {stats['percentile_10']:.6f}
-  • 25th Percentile: {stats['percentile_25']:.6f}
-  • 75th Percentile: {stats['percentile_75']:.6f}
-  • 90th Percentile: {stats['percentile_90']:.6f}
-  • 95th Percentile: {stats['percentile_95']:.6f}
+                    report += f"""  • 10th Percentile: {stats['percentile_10']:.8f}
+  • 25th Percentile: {stats['percentile_25']:.8f}
+  • 33rd Percentile: {stats['percentile_33']:.8f}
+  • 66th Percentile: {stats['percentile_66']:.8f}
+  • 75th Percentile: {stats['percentile_75']:.8f}
+  • 90th Percentile: {stats['percentile_90']:.8f}
+  • 95th Percentile: {stats['percentile_95']:.8f}
 """
                 
                 if metric in analysis.get('engineering_assessment', {}):
                     eng = analysis['engineering_assessment'][metric]
                     if 'error' not in eng:
-                        report += f"""  • Data Spread: {eng['data_spread']} (CV: {eng['coefficient_of_variation']:.3f})
+                        report += f"""  • Data Spread Assessment: {eng['data_spread']} (CV: {eng['coefficient_of_variation']:.4f})
   • Outlier Potential: {eng['outlier_potential']}
 """
     
-    # Map processing details
+    # Map processing details with code
     if 'map_data' in debug_data:
         map_data = debug_data['map_data']
         report += f"""
-MAP DATA PROCESSING - DETAILED
--------------------------------
+MAP DATA PROCESSING - DETAILED WITH CODE
+========================================
 Counties Processed: {map_data.get('counties_processed', 'N/A')}
 Counties with Valid Data: {map_data.get('valid_counties', 'N/A')}
 
-Data Filtering Pipeline:
+CODE SNIPPET - Map Data Processing:
+-----------------------------------
+import pandas as pd
+import numpy as np
+
+def create_environmental_map(data, metric_option):
+    # Get metric values
+    metric_map = {{
+        "carbon footprint": data["EFkgkWh"],
+        "scope 1 & 2 water footprint": data["EWIF"], 
+        "water scarcity footprint": data["AWAREUSCF"]
+    }}
+    
+    values = metric_map[metric_option]  # Your selected: {debug_data.get('metric', 'N/A')}
+    fips = data["CountyFIPS"]
+    
+    # Create DataFrame
+    fips_strings = [str(int(fips_code)).zfill(5) for fips_code in fips]
+    df = pd.DataFrame({{"fips": fips_strings, "value": values}})
+    
+    # Data filtering pipeline - YOUR PROCESSING:
+    print(f"Initial dataset: {{len(df)}} counties")           # {map_data.get('counties_processed', 'N/A')}
+    
+    df = df.dropna()
+    print(f"After removing NaN: {{len(df)}} counties")        # {map_data.get('valid_counties', 'N/A')} 
+    
+    df = df[df["value"] > 0]
+    print(f"After removing ≤0: {{len(df)}} counties")         # {map_data.get('valid_counties', 'N/A')}
+    
+    # Calculate percentile thresholds
+    low_percentile = np.percentile(df['value'], 33)           # Your value: {map_data.get('percentile_thresholds', {}).get('low', 'N/A')}
+    high_percentile = np.percentile(df['value'], 66)          # Your value: {map_data.get('percentile_thresholds', {}).get('high', 'N/A')}
+
+DATA FILTERING PIPELINE:
 """
         for i, step in enumerate(map_data.get('filtering_steps', []), 1):
             report += f"  {i}. {step}\n"
@@ -765,39 +922,136 @@ Data Filtering Pipeline:
         if 'percentile_thresholds' in map_data:
             thresholds = map_data['percentile_thresholds']
             report += f"""
-Impact Category Thresholds (33rd/66th Percentile Method):
-  • Low Impact (Bottom 33%): ≤ {thresholds['low']:.6f}
-  • Medium Impact (Middle 33%): {thresholds['low']:.6f} to {thresholds['high']:.6f}
-  • High Impact (Top 33%): > {thresholds['high']:.6f}
+IMPACT CATEGORY THRESHOLDS (33rd/66th Percentile Method):
+  • Low Impact (Bottom 33%): ≤ {thresholds['low']:.8f}
+  • Medium Impact (Middle 33%): {thresholds['low']:.8f} to {thresholds['high']:.8f}
+  • High Impact (Top 33%): > {thresholds['high']:.8f}
 
-County Distribution by Impact Category:
+COUNTY DISTRIBUTION BY IMPACT CATEGORY:
   • Low Impact Counties: {map_data.get('low_impact_count', 0):,} ({(map_data.get('low_impact_count', 0) / map_data.get('valid_counties', 1)) * 100:.1f}%)
   • Medium Impact Counties: {map_data.get('medium_impact_count', 0):,} ({(map_data.get('medium_impact_count', 0) / map_data.get('valid_counties', 1)) * 100:.1f}%)
   • High Impact Counties: {map_data.get('high_impact_count', 0):,} ({(map_data.get('high_impact_count', 0) / map_data.get('valid_counties', 1)) * 100:.1f}%)
+
+CODE SNIPPET - Category Assignment:
+-----------------------------------
+def categorize_value(val, low_percentile, high_percentile):
+    if val <= low_percentile:
+        return "Low Impact"      # ≤ {thresholds['low']:.8f}
+    elif val <= high_percentile:
+        return "Medium Impact"   # {thresholds['low']:.8f} to {thresholds['high']:.8f}
+    else:
+        return "High Impact"     # > {thresholds['high']:.8f}
+
+# Apply to your data:
+df["category"] = df["value"].apply(lambda x: categorize_value(x, {thresholds['low']:.8f}, {thresholds['high']:.8f}))
+"""
+
+        # Add statistical analysis code
+        if 'statistical_summary' in map_data:
+            stats = map_data['statistical_summary']
+            report += f"""
+STATISTICAL ANALYSIS CODE VERIFICATION:
+---------------------------------------
+import numpy as np
+
+# Your processed data statistics:
+valid_values = df["value"].values  # {map_data.get('valid_counties', 'N/A')} counties
+
+# Statistical calculations - VERIFY YOUR RESULTS:
+min_value = np.min(valid_values)      # Should be: {stats.get('min', 'N/A')}
+max_value = np.max(valid_values)      # Should be: {stats.get('max', 'N/A')}
+mean_value = np.mean(valid_values)    # Should be: {stats.get('mean', 'N/A')}
+median_value = np.median(valid_values) # Should be: {stats.get('median', 'N/A')}
+std_value = np.std(valid_values)      # Should be: {stats.get('std', 'N/A')}
+q1_value = np.percentile(valid_values, 25)  # Should be: {stats.get('q1', 'N/A')}
+q3_value = np.percentile(valid_values, 75)  # Should be: {stats.get('q3', 'N/A')}
+iqr_value = q3_value - q1_value       # Should be: {stats.get('iqr', 'N/A')}
 """
     
     report += f"""
-RECOMMENDATIONS FOR FURTHER ANALYSIS
-------------------------------------
-1. Verify input values against actual facility operation data
-2. Consider seasonal variations in consumption patterns  
-3. Validate capacity factor assumptions for power equipment
-4. Review county-specific factors for your facility location
-5. Compare results with industry benchmarks for your facility type
-6. Consider operational efficiency improvements to reduce impacts
+COMPLETE CODE INTEGRATION EXAMPLE
+=================================
+# Full workflow for reproducing your results:
 
-VALIDATION CHECKLIST
---------------------
-□ Power consumption realistic for facility size and type
-□ Water consumption aligned with industrial processes
-□ Capacity factors appropriate for equipment and operations  
-□ Units correctly converted and calculations verified
-□ County selection matches actual facility location
-□ Results compared with similar facilities in industry
+import streamlit as st
+import scipy.io
+import numpy as np
+import pandas as pd
+
+def main():
+    # 1. Load data
+    metrics = scipy.io.loadmat("CountyLevelMetrics.mat")
+    data = {{
+        "AWAREUSCF": metrics["AWAREUSCF"].flatten(),
+        "EFkgkWh": metrics["EFkgkWh"].flatten(),
+        "EWIF": metrics["EWIF"].flatten(),
+        "CountyFIPS": metrics["CountyFIPS"].flatten()
+    }}
+    
+    # 2. Convert power consumption
+    power_kwh_per_year = convert_power_to_kwh_per_year({debug_data.get('power_input', {}).get('input_value', 0)}, "{debug_data.get('power_input', {}).get('input_unit', 'kWh/yr')}", {debug_data.get('capacity_factor', 1.0)})
+    
+    # 3. Get environmental factors
+    metric_map = {{
+        "carbon footprint": data["EFkgkWh"],
+        "scope 1 & 2 water footprint": data["EWIF"],
+        "water scarcity footprint": data["AWAREUSCF"]
+    }}
+    environmental_factors = metric_map["{debug_data.get('metric', 'N/A')}"]
+    
+    # 4. Calculate impact
+    valid_factors = environmental_factors[~np.isnan(environmental_factors) & (environmental_factors > 0)]
+    median_factor = np.median(valid_factors)
+    facility_impact = power_kwh_per_year * median_factor
+    
+    print(f"Your facility impact: {{facility_impact:.2f}}")
+    
+    return facility_impact
+
+# Run the calculation
+if __name__ == "__main__":
+    result = main()
+    
+RECOMMENDATIONS FOR FURTHER ANALYSIS
+====================================
+1. VALIDATION CHECKLIST:
+   □ Verify input values against actual facility operation data
+   □ Check capacity factor assumptions for your equipment type
+   □ Validate units are correct (kW vs kWh, L/s vs gpm)
+   □ Review county selection matches actual facility location
+   □ Compare results with industry benchmarks
+
+2. CODE VERIFICATION:
+   □ Run the provided code snippets independently 
+   □ Verify statistical calculations match your data
+   □ Check conversion factors against engineering references
+   □ Validate percentile calculations and thresholds
+
+3. ENGINEERING IMPROVEMENTS:
+   □ Consider seasonal variations in consumption patterns
+   □ Account for equipment efficiency curves and load factors
+   □ Review operational schedules vs. 24/7 assumptions
+   □ Assess regional grid mix variations for accuracy
+
+4. DEBUGGING STEPS:
+   □ Test with known benchmark facilities
+   □ Verify data file integrity and version
+   □ Check for regional data filtering if state-specific
+   □ Validate county FIPS codes for your area
 
 =================================================================
-End of Enhanced Debug Report
-Generated by Environmental Impact Explorer v3.0 - Enhanced Edition
+END OF COMPREHENSIVE DEBUG REPORT WITH COMPLETE CODE ANALYSIS
+Generated by Environmental Impact Explorer v3.0 - Enhanced Engineering Edition
+File: COMPLETE_ENV_DEBUG_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt
+=================================================================
+    
+TECHNICAL SUPPORT:
+If you need to validate these calculations or have questions about the methodology,
+this report contains all the code snippets and calculation steps needed for 
+independent verification by your engineering team.
+
+All functions, formulas, and data processing steps are documented above with
+the exact code that produced your results.
 """
     
     return report
@@ -911,6 +1165,30 @@ def main():
         show_engineering = st.checkbox("🔧 Engineering Analysis", 
                                      help="Show engineering context and validation")
         
+        # PROMINENT DEBUG REPORT DOWNLOAD SECTION
+        st.subheader("🚨 DEBUG REPORT DOWNLOAD")
+        
+        if st.session_state.debug_data:
+            st.success("✅ Debug data available for download!")
+            
+            # Make download button VERY prominent
+            if st.button("📥 DOWNLOAD COMPLETE DEBUG REPORT", 
+                        use_container_width=True, 
+                        type="primary",
+                        help="Download comprehensive calculation analysis with code snippets"):
+                debug_report = generate_enhanced_debug_report(st.session_state.debug_data)
+                st.download_button(
+                    label="💾 SAVE DEBUG FILE NOW",
+                    data=debug_report,
+                    file_name=f"COMPLETE_ENV_DEBUG_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                    mime="text/plain",
+                    use_container_width=True,
+                    type="primary"
+                )
+                st.balloons()  # Visual confirmation
+        else:
+            st.info("ℹ️ Run a calculation first to generate debug data")
+        
         # Action buttons
         st.subheader("Actions")
         
@@ -948,6 +1226,17 @@ def main():
         with btn_col2:
             # Main calculation button
             calculate_impact = st.button("🧮 Calculate Impact", use_container_width=True, type="primary")
+        
+        # Download debug report button (full width)
+        if st.session_state.debug_data and st.button("📄 Download Enhanced Debug Report", use_container_width=True):
+            debug_report = generate_enhanced_debug_report(st.session_state.debug_data)
+            st.download_button(
+                label="💾 Download Report",
+                data=debug_report,
+                file_name=f"enhanced_environmental_debug_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
         
         # Download debug report button (full width)
         if st.session_state.debug_data and st.button("📄 Download Enhanced Debug Report", use_container_width=True):
