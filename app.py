@@ -1056,6 +1056,397 @@ the exact code that produced your results.
     
     return report
 
+def generate_quick_summary(debug_data: Dict[str, Any]) -> str:
+    """Generate a concise calculation summary for quick reference."""
+    summary = f"""
+ENVIRONMENTAL IMPACT CALCULATION SUMMARY
+========================================
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Report Type: QUICK REFERENCE SUMMARY
+
+INPUT PARAMETERS:
+-----------------
+State Selected: {debug_data.get('state', 'N/A')}
+Environmental Metric: {debug_data.get('metric', 'N/A')}
+Power Input: {debug_data.get('power_input', {}).get('input_value', 'N/A')} {debug_data.get('power_input', {}).get('input_unit', '')}
+Capacity Factor: {debug_data.get('capacity_factor', 1.0):.1%}
+"""
+    
+    if 'water_input' in debug_data:
+        summary += f"Water Input: {debug_data['water_input'].get('input_value', 'N/A')} {debug_data['water_input'].get('input_unit', '')}\n"
+    
+    summary += "\nCONVERSION RESULTS:\n"
+    summary += "-" * 19 + "\n"
+    
+    if 'power_conversion' in debug_data:
+        power = debug_data['power_conversion']
+        summary += f"Annual Power Consumption: {power['output_value']:,.0f} {power['output_unit']}\n"
+    
+    if 'water_conversion' in debug_data:
+        water = debug_data['water_conversion']
+        summary += f"Annual Water Consumption: {water['output_value']:,.0f} {water['output_unit']}\n"
+    
+    summary += "\nENVIRONMENTAL IMPACT RESULTS:\n"
+    summary += "-" * 29 + "\n"
+    
+    if 'environmental_impact' in debug_data:
+        impact = debug_data['environmental_impact']
+        if 'error' not in impact:
+            summary += f"Primary Impact: {impact['facility_impact']['median_impact']:.2f} {impact['impact_unit']}\n"
+            summary += f"Impact Range: {impact['facility_impact']['min_impact']:.0f} - {impact['facility_impact']['max_impact']:.0f}\n"
+            summary += f"Facility Category: {impact['facility_assessment']['category']}\n"
+            summary += f"Counties Analyzed: {impact['calculation_details']['counties_analyzed']:,}\n"
+            
+            summary += f"\nKEY CALCULATION:\n"
+            summary += f"{impact['calculation_details']['calculation']}\n"
+            
+            summary += f"\nINTERPRETATION:\n"
+            summary += f"{impact['interpretation']}\n"
+    
+    summary += f"""
+DATA QUALITY:
+-------------
+Total Counties in Dataset: {debug_data.get('data_analysis', {}).get('total_counties', 'N/A'):,}
+Valid Data Rate: {len([v for v in debug_data.get('map_data', {}).get('filtering_steps', []) if 'valid' in v.lower()])} filtering steps applied
+
+For complete details, see the full debug report.
+"""
+    
+    return summary
+
+def generate_engineering_report(debug_data: Dict[str, Any]) -> str:
+    """Generate engineering-focused analysis report."""
+    report = f"""
+ENGINEERING ANALYSIS REPORT
+============================
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Report Type: ENGINEERING ASSESSMENT AND VALIDATION
+
+FACILITY SCALE ASSESSMENT:
+==========================
+"""
+    
+    if 'environmental_impact' in debug_data and 'facility_assessment' in debug_data['environmental_impact']:
+        assessment = debug_data['environmental_impact']['facility_assessment']
+        report += f"""
+Scale Category: {assessment['category']}
+Engineering Context: {assessment['context']}
+Typical Range: {assessment['typical_range']}
+Assessment Notes: {assessment['engineering_notes']}
+"""
+    
+    report += f"\nPOWER CONSUMPTION ANALYSIS:\n"
+    report += "=" * 28 + "\n"
+    
+    if 'power_conversion' in debug_data:
+        power = debug_data['power_conversion']
+        report += f"""
+Input Power: {power['input_value']} {power['input_unit']}
+Capacity Factor Applied: {debug_data.get('capacity_factor', 1.0):.1%}
+Annual Power Consumption: {power['output_value']:,.0f} {power['output_unit']}
+
+ENGINEERING VALIDATION NOTES:
+"""
+        for note in power.get('engineering_notes', []):
+            report += f"• {note}\n"
+        
+        report += f"\nCONVERSION METHODOLOGY:\n"
+        for step in power.get('calculation_steps', []):
+            report += f"• {step}\n"
+    
+    if 'water_conversion' in debug_data:
+        water = debug_data['water_conversion']
+        report += f"\nWATER CONSUMPTION ANALYSIS:\n"
+        report += "=" * 28 + "\n"
+        report += f"""
+Input Water: {water['input_value']} {water['input_unit']}
+Annual Water Consumption: {water['output_value']:,.0f} {water['output_unit']}
+
+ENGINEERING VALIDATION NOTES:
+"""
+        for note in water.get('engineering_notes', []):
+            report += f"• {note}\n"
+    
+    if 'environmental_impact' in debug_data and 'error' not in debug_data['environmental_impact']:
+        impact = debug_data['environmental_impact']
+        report += f"\nENVIRONMENTAL IMPACT ENGINEERING ANALYSIS:\n"
+        report += "=" * 40 + "\n"
+        
+        stats = impact['impact_statistics']
+        report += f"""
+Statistical Robustness:
+• Data Points: {impact['calculation_details']['counties_analyzed']:,} counties
+• Coefficient of Variation: {stats['std_factor']/stats['mean_factor']:.3f}
+• Factor Range: {stats['min_factor']:.6f} to {stats['max_factor']:.6f}
+• Median Factor Used: {stats['median_factor']:.6f}
+
+Impact Assessment:
+• Best Case (Min): {impact['facility_impact']['min_impact']:.2f} {impact['impact_unit']}
+• Most Likely (Median): {impact['facility_impact']['median_impact']:.2f} {impact['impact_unit']}
+• Worst Case (Max): {impact['facility_impact']['max_impact']:.2f} {impact['impact_unit']}
+• Mean Impact: {impact['facility_impact']['mean_impact']:.2f} {impact['impact_unit']}
+
+Percentile Analysis:
+• 25th Percentile Factor: {stats['percentile_25']:.6f}
+• 75th Percentile Factor: {stats['percentile_75']:.6f}
+• Interquartile Range: {stats['percentile_75'] - stats['percentile_25']:.6f}
+"""
+    
+    # Add data quality assessment
+    if 'data_analysis' in debug_data:
+        analysis = debug_data['data_analysis']
+        report += f"\nDATA QUALITY ENGINEERING ASSESSMENT:\n"
+        report += "=" * 36 + "\n"
+        report += f"Total Dataset Size: {analysis['total_counties']:,} counties\n"
+        
+        for metric, info in analysis['metrics_analysis'].items():
+            if debug_data.get('metric', '').lower() in info['name'].lower():
+                report += f"""
+{info['name']} Quality Assessment:
+• Validity Rate: {info['percent_valid']:.1f}%
+• Valid Values: {info['valid_values']:,}/{info['total_values']:,}
+• Units: {info.get('unit', 'Unknown')}
+"""
+                
+                if metric in analysis.get('engineering_assessment', {}):
+                    eng = analysis['engineering_assessment'][metric]
+                    if 'error' not in eng:
+                        report += f"• Data Spread: {eng['data_spread']} (CV: {eng['coefficient_of_variation']:.4f})\n"
+                        report += f"• Outlier Risk: {eng['outlier_potential']}\n"
+    
+    report += f"""
+ENGINEERING RECOMMENDATIONS:
+============================
+"""
+    
+    recommendations = []
+    
+    # Check capacity factor
+    if debug_data.get('capacity_factor', 1.0) == 1.0:
+        recommendations.append("Consider realistic capacity factor (<100%) for power calculations")
+    
+    # Check facility size
+    if 'environmental_impact' in debug_data:
+        category = debug_data['environmental_impact']['facility_assessment']['category']
+        if "Residential" in category:
+            recommendations.append("Verify power consumption - seems low for industrial analysis")
+        elif "Large Industrial" in category:
+            recommendations.append("Large facility detected - consider detailed load profiling")
+    
+    # Check data quality
+    if 'map_data' in debug_data:
+        valid_rate = debug_data['map_data'].get('valid_counties', 0) / debug_data['map_data'].get('counties_processed', 1)
+        if valid_rate < 0.8:
+            recommendations.append("Data quality concern - low validity rate for environmental factors")
+    
+    if recommendations:
+        for i, rec in enumerate(recommendations, 1):
+            report += f"{i}. {rec}\n"
+    else:
+        report += "No immediate engineering concerns identified.\n"
+    
+    report += f"""
+VALIDATION CHECKLIST:
+====================
+□ Verify input values against actual facility operation data
+□ Check capacity factor assumptions for your equipment type  
+□ Validate units are correct (kW vs kWh, L/s vs gpm)
+□ Review county selection matches actual facility location
+□ Compare results with industry benchmarks
+□ Consider seasonal variations in consumption patterns
+□ Account for equipment efficiency curves and load factors
+
+For complete calculation details, see the full debug report.
+"""
+    
+    return report
+
+def extract_code_snippets(debug_data: Dict[str, Any]) -> str:
+    """Extract only the Python code snippets from debug data."""
+    code = f'''"""
+ENVIRONMENTAL IMPACT CALCULATION CODE SNIPPETS
+===============================================
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Python code for reproducing the calculations
+"""
+
+import numpy as np
+import pandas as pd
+import scipy.io
+
+# CONFIGURATION AND CONSTANTS
+# ============================
+
+FACILITY_BENCHMARKS = {{
+    "residential_small": {{"power_kwh": 5000, "description": "Small residential home"}},
+    "residential_large": {{"power_kwh": 15000, "description": "Large residential home"}},
+    "commercial_small": {{"power_kwh": 50000, "description": "Small commercial building"}},
+    "commercial_large": {{"power_kwh": 200000, "description": "Large commercial building"}},
+    "industrial_small": {{"power_kwh": 500000, "description": "Small industrial facility"}},
+    "industrial_large": {{"power_kwh": 5000000, "description": "Large industrial facility"}}
+}}
+
+# POWER CONVERSION FUNCTION
+# =========================
+
+def convert_power_to_kwh_per_year(value, unit, capacity_factor=1.0):
+    """Convert different power units to kWh/year with capacity factor."""
+    
+    if unit == "kWh/yr":
+        result = value
+    elif unit == "kWh/mo":
+        result = value * 12  # 12 months per year
+    elif unit == "kW":
+        hours_per_year = 8760  # 365.25 * 24
+        result = value * hours_per_year * capacity_factor
+    elif unit == "MW":
+        kw_conversion = 1000
+        hours_per_year = 8760
+        result = value * kw_conversion * hours_per_year * capacity_factor
+    else:
+        result = 0
+        
+    return result
+
+# WATER CONVERSION FUNCTION
+# =========================
+
+def convert_water_to_liters_per_year(value, unit):
+    """Convert different water units to liters/year."""
+    
+    if unit == "L/yr":
+        result = value
+    elif unit == "L/mo":
+        result = value * 12
+    elif unit == "L/s":
+        seconds_per_year = 31536000  # 365.25 * 24 * 3600
+        result = value * seconds_per_year
+    elif unit == "gpm":  # gallons per minute
+        minutes_per_year = 525600  # 365.25 * 24 * 60
+        liters_per_gallon = 3.78541
+        result = value * minutes_per_year * liters_per_gallon
+    elif unit == "gal/mo":
+        months_per_year = 12
+        liters_per_gallon = 3.78541
+        result = value * months_per_year * liters_per_gallon
+    else:
+        result = 0
+        
+    return result
+
+# FACILITY CATEGORIZATION FUNCTION
+# =================================
+
+def categorize_facility_size(power_kwh_per_year):
+    """Categorize facility size based on annual power consumption."""
+    
+    if power_kwh_per_year < 10000:
+        return "Residential Scale"
+    elif power_kwh_per_year < 30000:
+        return "Large Residential"
+    elif power_kwh_per_year < 100000:
+        return "Small Commercial"
+    elif power_kwh_per_year < 1000000:
+        return "Large Commercial/Light Industrial"
+    elif power_kwh_per_year < 10000000:
+        return "Industrial Facility"
+    else:
+        return "Large Industrial Complex"
+
+# ENVIRONMENTAL IMPACT CALCULATION FUNCTION
+# ==========================================
+
+def calculate_environmental_impact(power_kwh_per_year, metric_values):
+    """Calculate environmental impact using facility consumption and regional factors."""
+    
+    # Remove invalid values
+    valid_values = metric_values[~np.isnan(metric_values) & (metric_values > 0)]
+    
+    if len(valid_values) == 0:
+        return None
+    
+    # Calculate statistics
+    min_factor = np.min(valid_values)
+    max_factor = np.max(valid_values)
+    median_factor = np.median(valid_values)
+    mean_factor = np.mean(valid_values)
+    
+    # Calculate facility impact
+    min_impact = power_kwh_per_year * min_factor
+    max_impact = power_kwh_per_year * max_factor
+    median_impact = power_kwh_per_year * median_factor
+    mean_impact = power_kwh_per_year * mean_factor
+    
+    return {{
+        'min_impact': min_impact,
+        'max_impact': max_impact,
+        'median_impact': median_impact,
+        'mean_impact': mean_impact,
+        'median_factor': median_factor,
+        'counties_analyzed': len(valid_values)
+    }}
+
+# MAIN CALCULATION WORKFLOW
+# =========================
+
+def main_calculation():
+    """Main workflow for environmental impact calculation."""
+    
+    # 1. Load data
+    metrics = scipy.io.loadmat("CountyLevelMetrics.mat")
+    data = {{
+        "AWAREUSCF": metrics["AWAREUSCF"].flatten(),  # Water scarcity footprint
+        "EFkgkWh": metrics["EFkgkWh"].flatten(),      # Carbon footprint
+        "EWIF": metrics["EWIF"].flatten(),            # Water footprint
+        "CountyFIPS": metrics["CountyFIPS"].flatten() # County codes
+    }}
+    
+    # 2. Your specific inputs (replace with your values)
+    power_value = {debug_data.get('power_input', {}).get('input_value', 'YOUR_VALUE')}
+    power_unit = "{debug_data.get('power_input', {}).get('input_unit', 'YOUR_UNIT')}"
+    capacity_factor = {debug_data.get('capacity_factor', 1.0)}
+    metric_selected = "{debug_data.get('metric', 'carbon footprint')}"
+    
+    # 3. Convert power to standard units
+    annual_power_kwh = convert_power_to_kwh_per_year(power_value, power_unit, capacity_factor)
+    
+    # 4. Get environmental factors
+    metric_map = {{
+        "carbon footprint": data["EFkgkWh"],
+        "scope 1 & 2 water footprint": data["EWIF"],
+        "water scarcity footprint": data["AWAREUSCF"]
+    }}
+    environmental_factors = metric_map[metric_selected]
+    
+    # 5. Calculate impact
+    impact_results = calculate_environmental_impact(annual_power_kwh, environmental_factors)
+    
+    # 6. Categorize facility
+    facility_category = categorize_facility_size(annual_power_kwh)
+    
+    return {{
+        'annual_power_kwh': annual_power_kwh,
+        'impact_results': impact_results,
+        'facility_category': facility_category
+    }}
+
+# RUN THE CALCULATION
+# ===================
+
+if __name__ == "__main__":
+    results = main_calculation()
+    print(f"Annual Power: {{results['annual_power_kwh']:,.0f}} kWh/year")
+    print(f"Facility Category: {{results['facility_category']}}")
+    if results['impact_results']:
+        impact = results['impact_results']
+        print(f"Environmental Impact: {{impact['median_impact']:.2f}} (median)")
+        print(f"Impact Range: {{impact['min_impact']:.0f}} - {{impact['max_impact']:.0f}}")
+        print(f"Counties Analyzed: {{impact['counties_analyzed']:,}}")
+
+'''
+    
+    return code
+
 # -------------- MAIN APP --------------
 def main():
     """Main application function that contains all the UI and logic."""
@@ -1076,6 +1467,15 @@ def main():
     
     with col1:
         st.subheader("Configuration")
+        
+        # Status indicator at top of sidebar
+        if st.session_state.debug_data:
+            st.success("🟢 Debug Data Ready")
+            debug_size = len(str(st.session_state.debug_data))
+            st.caption(f"Data size: {debug_size:,} chars")
+        else:
+            st.info("🔴 No Debug Data")
+            st.caption("Run calculation first")
         
         # (1) State selection dropdown
         state = st.selectbox(
@@ -1152,7 +1552,7 @@ def main():
             )
         
         # Enhanced debug options
-        st.subheader("Debug Options")
+        st.subheader("🔍 Debug Options")
         
         debug_col1, debug_col2 = st.columns(2)
         with debug_col1:
@@ -1165,29 +1565,99 @@ def main():
         show_engineering = st.checkbox("🔧 Engineering Analysis", 
                                      help="Show engineering context and validation")
         
-        # PROMINENT DEBUG REPORT DOWNLOAD SECTION
-        st.subheader("🚨 DEBUG REPORT DOWNLOAD")
+        # ============================================================================
+        # FIXED DEBUG REPORT DOWNLOAD SECTION - SINGLE, PROMINENT SECTION
+        # ============================================================================
+        st.subheader("📥 DEBUG REPORTS & CALCULATIONS")
         
+        # Status indicator
         if st.session_state.debug_data:
             st.success("✅ Debug data available for download!")
+            debug_size = len(str(st.session_state.debug_data))
+            st.caption(f"📊 Data captured: {debug_size:,} characters of debug information")
             
-            # Make download button VERY prominent
-            if st.button("📥 DOWNLOAD COMPLETE DEBUG REPORT", 
-                        use_container_width=True, 
-                        type="primary",
-                        help="Download comprehensive calculation analysis with code snippets"):
-                debug_report = generate_enhanced_debug_report(st.session_state.debug_data)
+            # Main comprehensive report download
+            st.markdown("**📋 Complete Debug Report with Code:**")
+            debug_report = generate_enhanced_debug_report(st.session_state.debug_data)
+            
+            # Calculate file size
+            file_size_kb = len(debug_report.encode('utf-8')) / 1024
+            
+            # Prominent download button
+            download_col1, download_col2 = st.columns([3, 1])
+            with download_col1:
                 st.download_button(
-                    label="💾 SAVE DEBUG FILE NOW",
+                    label=f"📥 DOWNLOAD COMPLETE DEBUG REPORT ({file_size_kb:.1f} KB)",
                     data=debug_report,
                     file_name=f"COMPLETE_ENV_DEBUG_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                     mime="text/plain",
                     use_container_width=True,
-                    type="primary"
+                    type="primary",
+                    help="Downloads comprehensive report with all calculations, code snippets, and debug information"
                 )
-                st.balloons()  # Visual confirmation
+            with download_col2:
+                if st.button("👀 Preview", help="Preview report contents"):
+                    st.session_state.show_preview = not st.session_state.get('show_preview', False)
+            
+            # Preview toggle
+            if st.session_state.get('show_preview', False):
+                with st.expander("📄 Debug Report Preview", expanded=True):
+                    st.text_area(
+                        "Report Contents (first 2000 characters):",
+                        debug_report[:2000] + "\n\n... [Full report available in download] ...",
+                        height=300,
+                        disabled=True
+                    )
+            
+            # Additional download options
+            st.markdown("**📊 Additional Downloads:**")
+            
+            # Quick summary and engineering analysis side by side
+            add_col1, add_col2 = st.columns(2)
+            
+            with add_col1:
+                quick_summary = generate_quick_summary(st.session_state.debug_data)
+                st.download_button(
+                    label="📋 Quick Summary",
+                    data=quick_summary,
+                    file_name=f"calculation_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                    mime="text/plain",
+                    use_container_width=True,
+                    help="Concise summary of inputs, results, and key calculations"
+                )
+            
+            with add_col2:
+                eng_report = generate_engineering_report(st.session_state.debug_data)
+                st.download_button(
+                    label="🔬 Engineering Analysis",
+                    data=eng_report,
+                    file_name=f"engineering_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                    mime="text/plain",
+                    use_container_width=True,
+                    help="Engineering-focused analysis and recommendations"
+                )
+            
+            # Code-only download
+            if st.button("💻 Download Code Snippets Only", use_container_width=True):
+                code_snippets = extract_code_snippets(st.session_state.debug_data)
+                st.download_button(
+                    label="💾 Save Code Snippets",
+                    data=code_snippets,
+                    file_name=f"calculation_code_{datetime.now().strftime('%Y%m%d_%H%M%S')}.py",
+                    mime="text/x-python",
+                    use_container_width=True,
+                    key="code_download"
+                )
+            
         else:
             st.info("ℹ️ Run a calculation first to generate debug data")
+            st.markdown("""
+            **📋 Available Reports After Calculation:**
+            - **Complete Debug Report**: All calculations, code, and analysis
+            - **Quick Summary**: Concise results and key numbers  
+            - **Engineering Analysis**: Facility assessment and recommendations
+            - **Code Snippets**: Python code for calculations only
+            """)
         
         # Action buttons
         st.subheader("Actions")
@@ -1226,28 +1696,6 @@ def main():
         with btn_col2:
             # Main calculation button
             calculate_impact = st.button("🧮 Calculate Impact", use_container_width=True, type="primary")
-        
-        # Download debug report button (full width)
-        if st.session_state.debug_data and st.button("📄 Download Enhanced Debug Report", use_container_width=True):
-            debug_report = generate_enhanced_debug_report(st.session_state.debug_data)
-            st.download_button(
-                label="💾 Download Report",
-                data=debug_report,
-                file_name=f"enhanced_environmental_debug_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                mime="text/plain",
-                use_container_width=True
-            )
-        
-        # Download debug report button (full width)
-        if st.session_state.debug_data and st.button("📄 Download Enhanced Debug Report", use_container_width=True):
-            debug_report = generate_enhanced_debug_report(st.session_state.debug_data)
-            st.download_button(
-                label="💾 Download Report",
-                data=debug_report,
-                file_name=f"enhanced_environmental_debug_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                mime="text/plain",
-                use_container_width=True
-            )
         
         # AI Debug Analysis button
         if st.session_state.debug_data and st.button("🤖 AI Debug Analysis", use_container_width=True):
